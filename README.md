@@ -100,8 +100,8 @@ git clone https://github.com/devwithshams/digital-notebook.git
 cd digital-notebook/backend
 
 # Create virtual environment
-python -m venv venv
-source venv/bin/activate
+python -m venv .env
+source .env/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
