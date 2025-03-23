@@ -1,213 +1,187 @@
 # Digital Notebook System Documentation
 
-## Version: 1.0.0  
-## Author: [DevWithShams](https://github.com/devwithshams/digital-notebook)
-
----
-
 ## Table of Contents
 1. [Overview](#overview)
 2. [Features](#features)
-3. [System Architecture](#system-architecture)
+3. [Installation Guide](#installation-guide)
 4. [Database Schema](#database-schema)
-5. [Installation Guide](#installation-guide)
-6. [API Specifications](#api-specifications)
-7. [Authentication & Security](#authentication--security)
-8. [Deployment](#deployment)
-9. [Testing Strategy](#testing-strategy)
-10. [Troubleshooting](#troubleshooting)
-11. [Contributing](#contributing)
-12. [License](#license)
+5. [API Documentation](#api-documentation)
+6. [Authentication & Security](#authentication--security)
+7. [Deployment Guide](#deployment-guide)
+8. [Testing Strategy](#testing-strategy)
+9. [Contributing Guide](#contributing-guide)
+10. [Support & Troubleshooting](#support--troubleshooting)
 
 ---
 
 ## Overview
+The **Digital Notebook System** is a cloud-based application for creating, organizing, and collaborating on notes. Built with Django and React, it provides a seamless note-taking experience with features like **rich text editing, real-time collaboration, and cloud storage**.
 
-The **Digital Notebook System** is a cloud-based note-taking and collaboration platform designed to replace traditional notebooks. It allows users to create, edit, and share rich-text notes in real-time with seamless synchronization across devices.
-
-### Tech Stack:
-- **Backend**: Django, DRF, PostgreSQL, Redis
-- **Frontend**: React.js, Quill.js
-- **Infrastructure**: AWS S3, PythonAnywhere
-- **Authentication**: JWT, OAuth (Google, GitHub)
+### **Tech Stack**
+- **Backend**: Django, Django REST Framework (DRF), PostgreSQL, Redis.
+- **Frontend**: React.js, Quill.js.
+- **Infrastructure**: AWS S3, PythonAnywhere, Celery.
+- **Authentication**: JWT-based authentication.
 
 ---
 
 ## Features
-
-| Feature               | Description |
-|----------------------|-------------|
-| **Rich Text Editing** | Advanced note-taking with markdown and image embedding |
-| **Real-Time Collaboration** | Multi-user live editing with WebSockets |
-| **Advanced Search** | Full-text search with filters (tags, date, content) |
-| **Cloud Storage** | Secure AWS S3 storage for images and files |
-| **User Roles** | Owner, Editor, Viewer with permission-based access |
-
----
-
-## System Architecture
-
-### Backend Components:
-1. **Django REST Framework** - Handles API endpoints
-2. **PostgreSQL** - Relational database for storing notes
-3. **Redis + Celery** - Manages background tasks (notifications, indexing)
-
-### Frontend Components:
-1. **React.js** - Interactive user interface
-2. **Quill.js** - Rich text editor for formatting notes
-
-### Data Flow:
-1. **User Requests** - Frontend interacts with Django REST API
-2. **Processing** - API fetches data, applies business logic, stores in PostgreSQL
-3. **Storage** - Files and images are stored securely in AWS S3
-4. **Notifications** - WebSockets notify users of real-time changes
-
----
-
-## Database Schema
-
-### Table: `notes`
-| Column Name | Type | Description |
-|------------|------|-------------|
-| `id` | UUID | Unique identifier |
-| `title` | VARCHAR(200) | Note title |
-| `content` | TEXT | Rich text content |
-| `created_at` | TIMESTAMP | Timestamp when note was created |
-| `updated_at` | TIMESTAMP | Timestamp of last update |
-| `user_id` | UUID (FK) | Foreign key referencing `users` table |
-
-### Table: `collaborators`
-| Column Name | Type | Description |
-|------------|------|-------------|
-| `note_id` | UUID (FK) | Associated note ID |
-| `user_id` | UUID (FK) | Collaborator's user ID |
-| `permission` | ENUM | `view` or `edit` access |
+| Feature               | Description                                    |
+|-----------------------|------------------------------------------------|
+| **Rich Text Editing** | WYSIWYG editor, markdown support.             |
+| **Real-Time Sync**    | Live updates, comments, and mentions.         |
+| **Advanced Search**   | Full-text search with filters.                |
+| **Cloud Storage**     | Secure AWS S3 integration for media.          |
+| **User Roles**        | Admin, Owner, Editor, Viewer.                 |
 
 ---
 
 ## Installation Guide
-
 ### Prerequisites
-- Python 3.8+
+- Python 3.9+
 - Node.js 16+
 - PostgreSQL
-- Redis (for async tasks)
+- Redis
+- Virtual Environment (venv)
 
-### Backend Setup
+### **Backend Setup**
 ```bash
 # Clone repository
 git clone https://github.com/devwithshams/digital-notebook.git
 cd digital-notebook/backend
 
-# Create virtual environment
-python -m venv .env
-source .env/bin/activate
+# Create virtual environment and activate it
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Apply migrations
+# Apply database migrations
 python manage.py migrate
 
-# Start development server
+# Create superuser
+python manage.py createsuperuser
+
+# Start the server
 python manage.py runserver
 ```
 
-### Frontend Setup
+### **Frontend Setup**
 ```bash
 cd ../frontend
 
 # Install dependencies
 npm install
 
-# Start development server
+# Start the development server
 npm start
 ```
 
 ---
 
-## API Specifications
+## Database Schema
+### **Relational Model (PostgreSQL)**
+#### **Table: `notes_note`**
+| Field         | Type       | Description                     |
+|--------------|------------|---------------------------------|
+| `id`         | UUID       | Primary key.                    |
+| `user_id`    | UUID (FK)  | Owner of the note.              |
+| `title`      | VARCHAR    | Note title (max 200 chars).     |
+| `content`    | TEXT       | Formatted text/content.         |
+| `created_at` | TIMESTAMPTZ| Auto-generated timestamp.       |
 
-### Authentication
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/auth/register/` | POST | User registration |
-| `/api/auth/login/` | POST | User login & JWT generation |
-| `/api/auth/logout/` | POST | Logout & invalidate token |
+#### **Table: `collaborators`**
+| Field             | Type       | Description                     |
+|------------------|------------|---------------------------------|
+| `note_id`        | UUID (FK)  | Note being shared.              |
+| `user_id`        | UUID (FK)  | Collaborator’s user ID.         |
+| `permission_level`| ENUM       | `view` or `edit`.               |
 
-### Notes Management
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/notes/` | GET | Retrieve all notes |
-| `/api/notes/{id}/` | GET | Retrieve a single note |
-| `/api/notes/create/` | POST | Create a new note |
-| `/api/notes/{id}/update/` | PUT | Update a note |
-| `/api/notes/{id}/delete/` | DELETE | Delete a note |
+---
+
+## API Documentation
+### **Endpoints**
+| Endpoint                 | Method | Auth Required | Description                 |
+|--------------------------|--------|--------------|-----------------------------|
+| `/api/auth/register/`    | POST   | No           | Register a new user.        |
+| `/api/auth/login/`       | POST   | No           | User login.                 |
+| `/api/notes/`            | GET    | Yes          | List all user notes.        |
+| `/api/notes/{note_id}/`  | PUT    | Yes          | Update a specific note.     |
+
+**Example Request:**
+```bash
+curl -X POST http://api.notebook.com/auth/login/ \  
+  -H "Content-Type: application/json" \  
+  -d '{"email": "user@example.com", "password": "pass123"}'
+```
 
 ---
 
 ## Authentication & Security
-- **JWT-Based Authentication**: Secure login system using Django SimpleJWT
-- **OAuth Support**: Login via Google/GitHub (optional)
-- **Role-Based Access Control (RBAC)**:
-  - **Owner**: Full control over notes
-  - **Editor**: Edit permissions
-  - **Viewer**: Read-only access
-
-**Security Measures:**
-- AES-256 encryption for stored data
-- HTTPS/TLS 1.3 for secure communication
-- Rate-limiting (100 requests/min) to prevent abuse
+- **JWT Authentication**: Secure login and session management.
+- **Data Encryption**: AES-256 for data at rest, HTTPS/TLS 1.3 for transit.
+- **Rate Limiting**: 100 requests per minute per user.
+- **SQL Injection Prevention**: Django ORM handles queries securely.
 
 ---
 
-## Deployment
+## Deployment Guide
+### **PythonAnywhere Setup**
+1. Clone the repository.
+2. Set up a virtual environment.
+3. Configure `settings.py` for production.
+4. Apply database migrations.
+5. Start the WSGI application.
 
-### Docker Deployment
-```bash
-# Build and run containers
-docker-compose up --build
-```
-
-### PythonAnywhere Deployment
-1. Clone repository
-2. Install dependencies
-3. Configure `.env` file
-4. Run migrations & collect static files
+### **Frontend Deployment (Vercel)**
+1. Push code to GitHub.
+2. Connect repository on Vercel.
+3. Deploy automatically from `main` branch.
 
 ---
 
 ## Testing Strategy
+### **Test Types**
+| Type              | Tools            | Coverage Target |
+|------------------|-----------------|-----------------|
+| Unit Tests       | Pytest           | 90%             |
+| Integration Tests| DRF APITestCase  | Critical flows  |
+| Performance Tests| Locust           | 1k+ users       |
 
-| Test Type | Tool | Coverage |
-|-----------|------|----------|
-| Unit Tests | Pytest | 90% |
-| API Tests | DRF TestCase | Critical API endpoints |
-| Performance | Locust | Handles 1k+ users |
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Cannot connect to database | Check PostgreSQL credentials in `.env` |
-| Notes not saving | Verify Redis is running for Celery tasks |
-| Authentication fails | Ensure JWT secret key is correct |
+**Example Test:**
+```python
+# tests/test_notes.py
+def test_note_creation():
+    note = Note.objects.create(title="Test", content="...")
+    assert note.title == "Test"
+```
 
 ---
 
-## Contributing
-
-1. Fork the repository
-2. Create a new branch (`feature/new-feature`)
-3. Commit changes (`git commit -m 'Added new feature'`)
-4. Push to branch and create a PR
+## Contributing Guide
+1. **Fork the repository** on GitHub.
+2. **Create a feature branch**: `git checkout -b feature-new-feature`.
+3. **Commit changes**: `git commit -m "Added new feature"`.
+4. **Push to GitHub**: `git push origin feature-new-feature`.
+5. **Create a Pull Request** on GitHub.
 
 ---
 
-## License
+## Support & Troubleshooting
+### **Common Issues**
+| Issue                  | Solution                              |
+|------------------------|--------------------------------------|
+| Static files missing  | Run `python manage.py collectstatic`. |
+| Database connection   | Check `.env` credentials.            |
 
-This project is licensed under the **MIT License**.
+### **Contact**
+- **Email**: support@notebook.com
+- **Community Forum**: [forum.notebook.com](https://forum.notebook.com)
 
-**Repository**: [GitHub - DevWithShams](https://github.com/devwithshams/digital-notebook)
+---
+
+**License**: MIT  
+**Repository**: [GitHub](https://github.com/devwithshams/digital-notebook)
+
