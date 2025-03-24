@@ -38,10 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django.contrib.sites", #new
 
     # 3rd party apps
     'rest_framework',
     'corsheaders',
+    "rest_framework.authtoken",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",  # Enable social login (optional)
+    "dj_rest_auth",  # Enables REST authentication endpoints
+    "dj_rest_auth.registration",  # Enables registration endpoints
 
     # my apps
     'users.apps.UsersConfig',  # Ensure this app is correctly installed
@@ -50,9 +57,13 @@ INSTALLED_APPS = [
 ]
 
 
-REST_FRAMEWORK = { # new
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
     "DEFAULT_PERMISSION_CLASSES": [
-    "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.IsAuthenticated",
     ],
 }
 
@@ -67,6 +78,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
+
 ]
 
 # new
@@ -88,6 +101,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
     },
@@ -164,3 +178,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+SITE_ID = 1
+
+# AUTHENTICATION_BACKENDS = [
+#     "django.contrib.auth.backends.ModelBackend",  # Default backend
+#     "allauth.account.auth_backends.AuthenticationBackend",  # Allauth backend
+# ]
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# # ACCOUNT_EMAIL_VERIFICATION = "none"
+# ACCOUNT_AUTHENTICATION_METHOD = "email"
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = False
