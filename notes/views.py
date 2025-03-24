@@ -1,39 +1,23 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import render
-from rest_framework import generics, viewsets
+from rest_framework import viewsets
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .models import Note
 from .serializers import NoteSerializer, UserSerializer
 from .permissions import IsAuthorOrReadOnly
-from rest_framework.permissions import IsAdminUser
-
-# class NoteList(generics.ListCreateAPIView):
-#     permission_classes = (IsAuthorOrReadOnly,)
-#     queryset = Note.objects.all()
-#     serializer_class = NoteSerializer
-
-# class NoteDetail(generics.RetrieveUpdateDestroyAPIView):
-#     permission_classes = (IsAuthorOrReadOnly,)
-#     queryset = Note.objects.all()
-#     serializer_class = NoteSerializer
 
 class NoteViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthorOrReadOnly,)
-    queryset = Note.objects.all()
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]  # Users must be logged in
     serializer_class = NoteSerializer
 
+    def get_queryset(self):
+        """Only return notes created by the logged-in user."""
+        return Note.objects.filter(user=self.request.user)
 
+    def perform_create(self, serializer):
+        """Ensure the note is assigned to the current user automatically."""
+        serializer.save(user=self.request.user)
 
 class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]  # Only admin users can manage users
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
-
-
-# class UserList(generics.ListCreateAPIView):
-#     queryset = get_user_model().objects.all()
-#     serializer_class = UserSerializer
-
-
-# class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = get_user_model().objects.all()
-#     serializer_class = UserSerializer

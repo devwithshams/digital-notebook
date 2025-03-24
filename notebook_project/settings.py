@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount",  # Enable social login (optional)
     "dj_rest_auth",  # Enables REST authentication endpoints
     "dj_rest_auth.registration",  # Enables registration endpoints
+    "drf_spectacular", # OpenAPI schema generator
+
 
     # my apps
     'users.apps.UsersConfig',  # Ensure this app is correctly installed
@@ -65,8 +67,17 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Notebook API Project",
+    "DESCRIPTION": "A sample Notebook to learn about DRF",
+    "VERSION": "1.0.0",
+    # OTHER SETTINGS
+}
 
 
 MIDDLEWARE = [
